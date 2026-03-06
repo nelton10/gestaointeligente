@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db, appId } from './firebase/config';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, onSnapshot, doc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc } from 'firebase/firestore';
 
 // COMPONENTES PRINCIPAIS
 import LoginScreen from './components/auth/LoginScreen';
@@ -58,6 +58,16 @@ export default function App() {
   }, [user]);
 
   const showNotification = (msg) => alert(msg);
+  
+  const saveConfig = async (newData) => {
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'main'), newData, { merge: true });
+      showNotification("Configuração Guardada com sucesso!");
+    } catch (e) {
+      showNotification("Erro ao guardar configuração.");
+    }
+  };
+
   const turmasExistentes = [...new Set(alunos.map(a => a.turma))].sort();
 
   if (!isAuthenticated) {
@@ -90,7 +100,7 @@ export default function App() {
         {activeTab === 'coord' && <FilaCoordenacao coordinationQueue={coordinationQueue} suspensions={suspensions} usernameInput={usernameInput} showNotification={showNotification} />}
         {activeTab === 'medidas' && <Biblioteca libraryQueue={libraryQueue} usernameInput={usernameInput} showNotification={showNotification} />}
         {activeTab === 'pesquisa' && <PesquisaAlunos alunos={alunos} records={records} turmasExistentes={turmasExistentes} />}
-        {activeTab === 'admin' && <DashboardAdmin alunos={alunos} records={records} config={config} saveConfig={(newData) => console.log("Salvar", newData)} showNotification={showNotification} turmasExistentes={turmasExistentes} />}
+        {activeTab === 'admin' && <DashboardAdmin alunos={alunos} records={records} config={config} saveConfig={saveConfig} showNotification={showNotification} turmasExistentes={turmasExistentes} activeExits={activeExits} coordinationQueue={coordinationQueue} libraryQueue={libraryQueue} suspensions={suspensions} avisos={avisos} />}
       </main>
     </div>
   );
